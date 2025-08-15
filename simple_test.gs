@@ -4,38 +4,38 @@
  */
 
 // Replace with your actual library identifier
-const LIBRARY_ID = 'CryptoLib'; // This is what you name it when adding the library
+const LIBRARY_ID = 'CryptoAPILibrary'; // This is what you name it when adding the library
 
 /**
  * Test basic library functions
  */
-function testCryptoLibrary() {
+function testCryptoAPILibraryrary() {
   console.log('Testing Crypto Library...');
   
   try {
     // Test 1: Connection
     console.log('\n=== Testing Connection ===');
-    const connectionTest = CryptoLib.testConnection();
+    const connectionTest = CryptoAPILibrary.testConnection();
     console.log('Connection result:', connectionTest);
     
     // Test 2: Get supported networks
     console.log('\n=== Testing Supported Networks ===');
-    const networks = CryptoLib.getSupportedNetworks();
+    const networks = CryptoAPILibrary.getSupportedNetworks();
     console.log('Networks:', networks);
     
     // Test 3: Simple price fetch
     console.log('\n=== Testing Price Fetch ===');
-    const prices = CryptoLib.fetchCryptoPrices(['bitcoin'], 'usd');
+    const prices = CryptoAPILibrary.fetchCryptoPrices(['bitcoin'], 'usd');
     console.log('Bitcoin price:', prices);
     
     // Test 4: Multiple coins
     console.log('\n=== Testing Multiple Coins ===');
-    const multiPrices = CryptoLib.fetchCryptoPrices(['bitcoin', 'ethereum', 'cardano'], 'usd');
+    const multiPrices = CryptoAPILibrary.fetchCryptoPrices(['bitcoin', 'ethereum', 'cardano'], 'usd');
     console.log('Multiple prices:', multiPrices);
     
     // Test 5: Usage stats
     console.log('\n=== Testing Usage Stats ===');
-    const usage = CryptoLib.getMyUsage();
+    const usage = CryptoAPILibrary.getMyUsage();
     console.log('Usage stats:', usage);
     
     console.log('\n=== All Tests Complete ===');
@@ -62,7 +62,7 @@ function updateSheetWithPrices() {
     
     // Get prices
     const tokens = ['bitcoin', 'ethereum', 'cardano', 'solana'];
-    const result = CryptoLib.fetchCryptoPrices(tokens, 'usd');
+    const result = CryptoAPILibrary.fetchCryptoPrices(tokens, 'usd');
     
     if (result.error) {
       sheet.getRange('A2').setValue('Error: ' + result.error);
@@ -93,7 +93,7 @@ function updateSheetWithPrices() {
  */
 function checkMyUsage() {
   try {
-    const usage = CryptoLib.getMyUsage();
+    const usage = CryptoAPILibrary.getMyUsage();
     console.log('Your API Usage:', usage);
     
     // You can also display this in a sheet
@@ -117,12 +117,12 @@ function testAccessControl() {
   try {
     // Test debugUserAccess to see current user status
     console.log('\n=== Debug User Access ===');
-    const debugInfo = CryptoLib.debugUserAccess();
+    const debugInfo = CryptoAPILibrary.debugUserAccess();
     console.log('Debug info:', JSON.stringify(debugInfo, null, 2));
     
     // Test fetchCryptoPrices to see if access is properly controlled
     console.log('\n=== Testing Access to fetchCryptoPrices ===');
-    const priceResult = CryptoLib.fetchCryptoPrices(['bitcoin'], 'usd');
+    const priceResult = CryptoAPILibrary.fetchCryptoPrices(['bitcoin'], 'usd');
     console.log('Price fetch result:', JSON.stringify(priceResult, null, 2));
     
     // Analyze results
@@ -132,17 +132,32 @@ function testAccessControl() {
       console.log(`User email: ${debugInfo.userEmail}`);
       console.log(`Is blocked: ${debugInfo.isBlocked}`);
       console.log(`In allowed list: ${debugInfo.allowedUsers.includes(debugInfo.userEmail)}`);
+      console.log(`Allowed users count: ${debugInfo.allowedUsers.length}`);
+      console.log(`Allowed users: ${JSON.stringify(debugInfo.allowedUsers)}`);
       
-      if (debugInfo.accessMode === 'EMAIL_WHITELIST') {
-        if (!debugInfo.allowedUsers.includes(debugInfo.userEmail)) {
+      // Check for different scenarios
+      if (debugInfo.accessMode === 'EMAIL_WHITELIST' || debugInfo.accessMode === 'ADMIN_SHEET_NOT_CONFIGURED') {
+        if (debugInfo.allowedUsers.length === 0) {
+          console.log('⚠️  WARNING: EMAIL_WHITELIST mode with 0 allowed users - admin sheet may not be set up');
+          if (priceResult.error && priceResult.status === 'access_denied') {
+            console.log('✅ SECURITY WORKING: Access correctly denied (no allowed users)');
+          } else {
+            console.log('❌ SECURITY BUG: Access should be denied but wasn\'t!');
+          }
+        } else if (!debugInfo.allowedUsers.includes(debugInfo.userEmail)) {
           console.log('✓ CORRECT: User should be denied access (not in whitelist)');
           if (priceResult.error && priceResult.status === 'access_denied') {
-            console.log('✓ ACCESS CONTROL WORKING: Price fetch correctly denied');
+            console.log('✅ ACCESS CONTROL WORKING: Price fetch correctly denied');
           } else {
-            console.log('✗ BUG: Price fetch should have been denied but wasn\'t');
+            console.log('❌ BUG: Price fetch should have been denied but wasn\'t');
           }
         } else {
           console.log('✓ CORRECT: User should be allowed access (in whitelist)');
+          if (!priceResult.error) {
+            console.log('✅ ACCESS CONTROL WORKING: Price fetch correctly allowed');
+          } else {
+            console.log('❌ BUG: Price fetch should have been allowed but was denied');
+          }
         }
       } else if (debugInfo.accessMode === 'OPEN') {
         if (!debugInfo.isBlocked) {
@@ -151,6 +166,14 @@ function testAccessControl() {
           console.log('✓ CORRECT: User should be denied access (blocked)');
         }
       }
+    }
+    
+    // Check if admin sheet needs setup
+    if (debugInfo.sheetAccess !== 'success') {
+      console.log('\n⚠️  ADMIN SETUP REQUIRED:');
+      console.log('Sheet access status:', debugInfo.sheetAccess);
+      console.log('You may need to run the setup() function in AdminManager.gs');
+      console.log('Or check that the SHEET_ID in Config.gs is correct');
     }
     
   } catch (error) {

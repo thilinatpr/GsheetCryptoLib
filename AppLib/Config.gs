@@ -35,6 +35,7 @@ const DEFAULT_CONFIG = {
 function getPrivateConfig() {
 	// Start with default config
 	let config = { ...DEFAULT_CONFIG };
+	console.log('getPrivateConfig: Starting with defaults - ACCESS_MODE:', config.ACCESS_MODE, 'ALLOWED_EMAILS:', config.ALLOWED_EMAILS.length);
 	
 	// Check if admin sheet is configured
 	if (!ADMIN_CONFIG.SHEET_ID) {
@@ -45,6 +46,7 @@ function getPrivateConfig() {
 	try {
 		// Override with sheet settings if available
 		const accessMode = getSettingFromSheet('ACCESS_MODE');
+		console.log('getPrivateConfig: Got ACCESS_MODE from sheet:', accessMode);
 		if (accessMode) config.ACCESS_MODE = accessMode;
 		
 		const adminEmail = getSettingFromSheet('ADMIN_EMAIL');
@@ -60,14 +62,27 @@ function getPrivateConfig() {
 		if (dailyLimit) config.RATE_LIMITS.maxRequestsPerDay = parseInt(dailyLimit);
 		
 		// Get user lists from sheet
-		config.ALLOWED_EMAILS = getAllowedUsersFromSheet();
-		config.BLOCKED_USERS = getBlockedUsersFromSheet();
+		const allowedEmails = getAllowedUsersFromSheet();
+		const blockedUsers = getBlockedUsersFromSheet();
+		console.log('getPrivateConfig: Got from sheet - allowedEmails:', allowedEmails.length, 'blockedUsers:', blockedUsers.length);
+		
+		config.ALLOWED_EMAILS = allowedEmails;
+		config.BLOCKED_USERS = blockedUsers;
+		
+		// SECURITY: If we're in EMAIL_WHITELIST mode but have no allowed emails,
+		// this might indicate the admin sheet isn't set up properly
+		if (config.ACCESS_MODE === 'EMAIL_WHITELIST' && config.ALLOWED_EMAILS.length === 0) {
+			console.warn('SECURITY WARNING: EMAIL_WHITELIST mode with 0 allowed emails - admin sheet may not be set up!');
+			// Force restrictive mode - deny all access until admin sheet is properly configured
+			config.ACCESS_MODE = 'ADMIN_SHEET_NOT_CONFIGURED';
+		}
 		
 	} catch (error) {
 		console.warn('Could not load sheet config, using defaults:', error.message);
 		// Don't call logToSheet here since that might also fail
 	}
 	
+	console.log('getPrivateConfig: Final config - ACCESS_MODE:', config.ACCESS_MODE, 'ALLOWED_EMAILS:', config.ALLOWED_EMAILS.length);
 	return config;
 }
 
@@ -138,6 +153,10 @@ function checkUserAccess(userEmail, config) {
 					throw new Error('Access denied: Neither email nor domain is whitelisted');
 				}
 				return true;
+				
+			case 'ADMIN_SHEET_NOT_CONFIGURED':
+				// Admin sheet is not properly set up - deny all access
+				throw new Error('Access denied: Admin sheet not configured properly - run setup() first');
 				
 			default:
 				// Default to EMAIL_WHITELIST for security (restrictive mode)

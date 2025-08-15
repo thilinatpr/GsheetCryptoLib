@@ -180,6 +180,8 @@ function createLogsSheet(ss) {
  * Get all allowed users from sheet
  */
 function getAllowedUsersFromSheet() {
+  console.log('getAllowedUsersFromSheet: Starting, SHEET_ID:', ADMIN_CONFIG.SHEET_ID);
+  
   if (!ADMIN_CONFIG.SHEET_ID) {
     console.log('Admin sheet not configured, no allowed users');
     return [];
@@ -187,22 +189,29 @@ function getAllowedUsersFromSheet() {
   
   try {
     const ss = SpreadsheetApp.openById(ADMIN_CONFIG.SHEET_ID);
+    console.log('getAllowedUsersFromSheet: Opened spreadsheet successfully');
+    
     const sheet = ss.getSheetByName(ADMIN_CONFIG.SHEETS.USERS);
     if (!sheet) {
       console.log('Users sheet not found, no allowed users');
       return [];
     }
     
+    console.log('getAllowedUsersFromSheet: Found Users sheet');
     const data = sheet.getDataRange().getValues();
+    console.log('getAllowedUsersFromSheet: Got data, rows:', data.length);
+    
     const allowedUsers = [];
     
     for (let i = 1; i < data.length; i++) { // Skip header
       const [email, status] = data[i];
+      console.log('getAllowedUsersFromSheet: Checking row', i, 'email:', email, 'status:', status);
       if (status === 'ALLOWED' && email) {
         allowedUsers.push(email.toLowerCase().trim());
       }
     }
     
+    console.log('getAllowedUsersFromSheet: Returning', allowedUsers.length, 'allowed users:', allowedUsers);
     return allowedUsers;
   } catch (error) {
     console.warn('Error reading allowed users, returning empty list:', error.message);
