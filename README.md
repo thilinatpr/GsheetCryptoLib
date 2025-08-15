@@ -1,28 +1,55 @@
-# Crypto Price Tracker - User Guide
 
-## Setup Instructions
+# GsheetCryptoLib
 
-1. **Make a Copy of the Template**
-   - Open the template sheet
-   - File → Make a copy
-   - Name your copy
+A secure, modular Google Apps Script library and webapp for tracking cryptocurrency prices in Google Sheets.
 
-2. **Link the Library** (Already Done in Template)
-   - The library is pre-linked in the template
-   - No API key needed - it's handled securely
+## Features
+- Fetch live crypto prices securely (API key never exposed)
+- Rate limiting per user (100/hour, 1000/day by default)
+- Supports custom tokens, networks, and coins
+- Admin analytics and usage tracking
+- Can be used as an Apps Script Library or deployed as a Web App
 
-3. **Setup Your Data**
-   - Click "Crypto Prices" menu
-   - Select "Setup Sample Data" to start
-   - Or create your own data sheet with columns: Coin ID | Symbol | Name
+## Directory Structure
+```
+GsheetCryptoLib/
+├── UserTemplate/         # Example user-facing Apps Script project
+│   ├── Config.gs         # User config (sheet names, currency, etc)
+│   ├── Main.gs           # Main logic (fetch prices, menu, etc)
+│   └── Menu.gs           # Custom menu for Google Sheets
+├── lib/                  # Secure library code (for Library deployment)
+│   ├── Config.gs         # Private config (API key, admin, limits)
+│   ├── PublicAPI.gs      # Public API surface (functions users can call)
+│   ├── RateLimiter.gs    # Per-user rate limiting
+│   ├── SecureAPIService.gs # Secure API logic
+│   └── README.md         # Library usage notes
+├── WebAppLib/            # Webapp-ready copy of the library
+│   ├── (same as lib/ plus WebApp.gs entrypoint)
+│   └── WebApp.gs         # doPost() entrypoint for webapp
+└── README.md             # (this file)
+```
 
-4. **Fetch Prices**
-   - Click "Crypto Prices" → "Fetch Prices"
-   - Prices will appear in the "prices" sheet
+## Usage
 
-## Usage Limits
-- 100 requests per hour
-- 1000 requests per day
+### As an Apps Script Library
+1. Open your Google Sheet's Apps Script editor.
+2. Add the library using the deployment ID from `lib` (see `lib/README.md`).
+3. Use the functions in your script (see `UserTemplate/Main.gs` for examples).
 
-## Support
-Contact: [your-email]
+### As a Web App
+1. Open `WebAppLib` in the Apps Script editor.
+2. Deploy as a Web App (Deploy → New deployment → Web app).
+   - Execute as: Me (script owner)
+   - Who has access: Anyone (or restrict by email in `WebApp.gs`)
+3. Use the deployment ID in your client code to call the webapp via `UrlFetchApp`.
+
+## Security
+- API keys and sensitive logic are never exposed to users.
+- Rate limiting and user/domain restrictions are enforced server-side.
+- You can further restrict access by editing the whitelist in `WebAppLib/WebApp.gs`.
+
+## Contributing
+Pull requests and issues are welcome!
+
+## License
+MIT
