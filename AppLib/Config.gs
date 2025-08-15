@@ -92,6 +92,17 @@ function checkUserAccess(userEmail, config) {
 		}
 		
 		const userEmailLower = userEmail.toLowerCase().trim();
+		
+		// Check if user is anonymous (not logged in with valid Google account)
+		if (isAnonymousUser(userEmailLower)) {
+			throw new Error('Access denied: Anonymous users not allowed');
+		}
+		
+		// Validate email format
+		if (!isValidEmail(userEmailLower)) {
+			throw new Error('Access denied: Invalid email format');
+		}
+		
 		const userDomain = userEmailLower.split('@')[1];
 		
 		// First check: Always block if user is explicitly blocked
@@ -100,6 +111,7 @@ function checkUserAccess(userEmail, config) {
 		}
 		
 		// Second check: Apply ACCESS_MODE rules
+		console.log('Checking access for user:', userEmailLower, 'Mode:', config.ACCESS_MODE, 'Allowed emails:', config.ALLOWED_EMAILS.length);
 		switch (config.ACCESS_MODE) {
 			case 'OPEN':
 				// Allow anyone who isn't blocked
@@ -135,7 +147,7 @@ function checkUserAccess(userEmail, config) {
 				return true;
 		}
 	} catch (error) {
-		console.error('Access check failed:', error);
+		console.error('Access check failed for user:', userEmail, 'Error:', error.message);
 		return false;
 	}
 }
