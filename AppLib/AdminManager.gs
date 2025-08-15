@@ -109,7 +109,7 @@ function createSettingsSheet(ss) {
   
   // Add settings
   const settings = [
-    ['ACCESS_MODE', 'OPEN', 'OPEN, EMAIL_WHITELIST, DOMAIN_WHITELIST, MIXED'],
+    ['ACCESS_MODE', 'EMAIL_WHITELIST', 'OPEN, EMAIL_WHITELIST, DOMAIN_WHITELIST, MIXED'],
     ['MAX_REQUESTS_PER_HOUR', '100', 'Hourly rate limit per user'],
     ['MAX_REQUESTS_PER_DAY', '1000', 'Daily rate limit per user'],
     ['ADMIN_EMAIL', 'admin@example.com', 'Administrator email address'],

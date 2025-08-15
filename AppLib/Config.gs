@@ -25,7 +25,7 @@ const DEFAULT_CONFIG = {
 	ALLOWED_EMAILS: [],
 	ALLOWED_DOMAINS: [],
 	BLOCKED_USERS: [],
-	ACCESS_MODE: 'OPEN',
+	ACCESS_MODE: 'EMAIL_WHITELIST',
 	ADMIN_EMAIL: 'serendibscribe@gmail.com'
 };
 
