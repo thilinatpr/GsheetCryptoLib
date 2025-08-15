@@ -1,52 +1,68 @@
 
 # GsheetCryptoLib
 
-A secure, modular Google Apps Script library and webapp for tracking cryptocurrency prices in Google Sheets.
+A secure Google Apps Script library for tracking cryptocurrency prices in Google Sheets with backend-controlled operations and real-time admin management.
 
 ## Features
 - Fetch live crypto prices securely (API key never exposed)
+- Real-time admin sheet access control (no cached configuration)
+- Backend-controlled sheet operations (prices, networks, coins)
 - Rate limiting per user (100/hour, 1000/day by default)
-- Supports custom tokens, networks, and coins
-- Admin analytics and usage tracking
-- Can be used as an Apps Script Library or deployed as a Web App
+- Admin analytics and usage tracking via Google Sheets
+- Library-only architecture for simplified integration
 
 ## Directory Structure
 ```
 GsheetCryptoLib/
-├── UserTemplate/         # Example user-facing Apps Script project
-│   ├── Config.gs         # User config (sheet names, currency, etc)
-│   ├── Main.gs           # Main logic (fetch prices, menu, etc)
-│   └── Menu.gs           # Custom menu for Google Sheets
-├── lib/                  # Secure library code (for Library deployment)
+├── UserTemplate/         # Simplified library-only integration example
+│   ├── Config.gs         # Library configuration (identifier, sheet names)
+│   ├── Main.gs           # Backend library function calls
+│   ├── Menu.gs           # Custom menu for Google Sheets
+│   └── README.md         # Setup guide
+├── AppLib/               # Core library code for Apps Script deployment
 │   ├── Config.gs         # Private config (API key, admin, limits)
-│   ├── PublicAPI.gs      # Public API surface (functions users can call)
+│   ├── PublicAPI.gs      # Main public API functions
+│   ├── AdminManager.gs   # Complete admin sheet management
 │   ├── RateLimiter.gs    # Per-user rate limiting
-│   ├── SecureAPIService.gs # Secure API logic
-│   └── README.md         # Library usage notes
-├── WebAppLib/            # Webapp-ready copy of the library
-│   ├── (same as lib/ plus WebApp.gs entrypoint)
-│   └── WebApp.gs         # doPost() entrypoint for webapp
-└── README.md             # (this file)
+│   ├── SecureAPIService.gs # Secure API with admin sheet logging
+│   ├── EmailUtils.gs     # Safe email handling utilities
+│   └── README.md         # Library deployment guide
+├── simple_test.gs        # Basic testing script
+├── ADMIN_SETUP_GUIDE.md  # Admin sheet configuration guide
+└── CLAUDE.md             # Technical documentation
 ```
 
 ## Usage
 
-### As an Apps Script Library
-1. Open your Google Sheet's Apps Script editor.
-2. Add the library using the deployment ID from `lib` (see `lib/README.md`).
-3. Use the functions in your script (see `UserTemplate/Main.gs` for examples).
+### Library Deployment (Recommended)
+1. Deploy `AppLib/` as Google Apps Script Library
+2. Configure admin sheet ID in `AppLib/Config.gs`
+3. Add library to user projects and call backend functions
+4. See `UserTemplate/README.md` for complete setup guide
 
-### As a Web App
-1. Open `WebAppLib` in the Apps Script editor.
-2. Deploy as a Web App (Deploy → New deployment → Web app).
-   - Execute as: Me (script owner)
-   - Who has access: Anyone (or restrict by email in `WebApp.gs`)
-3. Use the deployment ID in your client code to call the webapp via `UrlFetchApp`.
+### Quick Start
+```javascript
+// In UserTemplate or user project
+const result = CryptoLib.fetchPricesForSheet(
+  spreadsheetId, 
+  'data',      // data sheet name
+  'prices',    // output sheet name
+  'usd'        // currency
+);
+```
+
+## Admin Management
+- **Setup**: See `ADMIN_SETUP_GUIDE.md` for Google Sheets admin configuration
+- **Real-time Control**: Manage users, settings, and view analytics via Google Sheets
+- **Access Control**: ALLOWED/BLOCKED status enforced instantly
+- **Analytics**: Usage tracking and logging automatically handled
 
 ## Security
-- API keys and sensitive logic are never exposed to users.
-- Rate limiting and user/domain restrictions are enforced server-side.
-- You can further restrict access by editing the whitelist in `WebAppLib/WebApp.gs`.
+- API keys and sensitive logic never exposed to users
+- Real-time admin sheet access control (no cached configuration)
+- All sheet operations controlled by backend functions
+- Rate limiting and user restrictions enforced server-side
+- Complete audit trail via admin sheet logging
 
 ## Contributing
 Pull requests and issues are welcome!

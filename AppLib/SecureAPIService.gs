@@ -24,7 +24,7 @@ class SecureAPIService {
 	fetchPrices(tokens, currency = 'usd') {
 		try {
 			// Check rate limits
-			const userEmail = Session.getActiveUser().getEmail();
+			const userEmail = getSafeUserEmail();
 			this.rateLimiter.checkLimit(userEmail);
       
 			// Log the request
@@ -89,7 +89,7 @@ class SecureAPIService {
 	 */
 	fetchSupportedNetworks() {
 		try {
-			const userEmail = Session.getActiveUser().getEmail();
+			const userEmail = getSafeUserEmail();
 			this.rateLimiter.checkLimit(userEmail);
       
 			this.logUsage('fetch_networks');
@@ -130,7 +130,7 @@ class SecureAPIService {
 	 */
 	fetchCoinsList(limit = 100) {
 		try {
-			const userEmail = Session.getActiveUser().getEmail();
+			const userEmail = getSafeUserEmail();
 			this.rateLimiter.checkLimit(userEmail);
       
 			this.logUsage('fetch_coins_list');
@@ -198,7 +198,7 @@ class SecureAPIService {
 		try {
 			const log = {
 				timestamp: new Date().toISOString(),
-				user: Session.getActiveUser().getEmail(),
+				user: getSafeUserEmail(),
 				action: action,
 				details: details
 			};
@@ -219,7 +219,7 @@ class SecureAPIService {
 		try {
 			const log = {
 				timestamp: new Date().toISOString(),
-				user: Session.getActiveUser().getEmail(),
+				user: getSafeUserEmail(),
 				action: action,
 				error: error.message || error.toString()
 			};

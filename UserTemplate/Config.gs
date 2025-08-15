@@ -2,8 +2,8 @@
  * User Configuration
  */
 const USER_CONFIG = {
-  // Library deployment ID (provided by you)
-  LIBRARY_ID: 'YOUR_LIBRARY_DEPLOYMENT_ID', // You provide this
+  // Library identifier - set this when adding the crypto library to your project
+  LIBRARY_IDENTIFIER: 'CryptoLib', // The identifier you choose when adding the library
   
   // Sheet names
   DATA_SHEET: 'data',
